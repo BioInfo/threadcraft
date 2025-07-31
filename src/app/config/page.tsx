@@ -23,32 +23,80 @@ const POPULAR_MODELS: OpenRouterModel[] = [
     id: 'anthropic/claude-4.0-sonnet',
     name: 'Claude 4.0 Sonnet',
     description: 'Anthropic\'s latest and most capable model with excellent reasoning, coding, and creative writing abilities.',
-    pricing: { prompt: '0.000003', completion: '0.000015' },
+    pricing: { prompt: '3.00', completion: '15.00' },
+    context_length: 200000,
+    architecture: { modality: 'text+image->text' }
+  },
+  {
+    id: 'anthropic/claude-3.5-sonnet',
+    name: 'Claude 3.5 Sonnet',
+    description: 'A powerful and versatile model from Anthropic, great for a wide range of tasks.',
+    pricing: { prompt: '3.00', completion: '15.00' },
     context_length: 200000,
     architecture: { modality: 'text+image->text' }
   },
   {
     id: 'google/gemini-2.5-pro',
     name: 'Gemini 2.5 Pro',
-    description: 'Google\'s latest and most capable model with advanced reasoning and multimodal capabilities.',
-    pricing: { prompt: '0.0000125', completion: '0.0000375' },
+    description: 'Google\'s state-of-the-art model with advanced reasoning and multimodal capabilities.',
+    pricing: { prompt: '12.50', completion: '37.50' },
     context_length: 1000000,
     architecture: { modality: 'text+image->text' }
   },
   {
-    id: 'z-ai/glm-4.5',
-    name: 'GLM 4.5',
-    description: 'A powerful new model from Zhipu AI with strong performance in various tasks.',
-    pricing: { prompt: '0.00001', completion: '0.00002' },
+    id: 'openai/gpt-4o',
+    name: 'GPT-4o',
+    description: 'OpenAI\'s flagship multimodal model with strong performance across all tasks.',
+    pricing: { prompt: '2.50', completion: '10.00' },
+    context_length: 128000,
+    architecture: { modality: 'text+image->text' }
+  },
+  {
+    id: 'meta-llama/llama-4-maverick',
+    name: 'Llama 4 Maverick',
+    description: 'Meta\'s high-capacity multimodal model with a large context window.',
+    pricing: { prompt: '0.15', completion: '0.60' },
+    context_length: 1050000,
+    architecture: { modality: 'text+image->text' }
+  },
+  {
+    id: 'mistralai/mistral-large-2407',
+    name: 'Mistral Large 2407',
+    description: 'Mistral\'s flagship model with excellent multilingual support and reasoning.',
+    pricing: { prompt: '2.00', completion: '6.00' },
     context_length: 131072,
     architecture: { modality: 'text->text' }
+  },
+  {
+    id: 'x-ai/grok-4',
+    name: 'Grok 4',
+    description: 'xAI\'s latest reasoning model with a large context window and multimodal capabilities.',
+    pricing: { prompt: '3.00', completion: '15.00' },
+    context_length: 256000,
+    architecture: { modality: 'text+image->text' }
   },
   {
     id: 'qwen/qwen3-235b-a22b-thinking-2507',
     name: 'Qwen 3.2 235B',
     description: 'A large-scale model from Alibaba Cloud with advanced thinking and reasoning capabilities.',
-    pricing: { prompt: '0.00002', completion: '0.00004' },
+    pricing: { prompt: '0.12', completion: '0.12' },
+    context_length: 262144,
+    architecture: { modality: 'text->text' }
+  },
+  {
+    id: 'z-ai/glm-4.5',
+    name: 'GLM 4.5',
+    description: 'A powerful new model from Zhipu AI with strong performance in various tasks.',
+    pricing: { prompt: '0.20', completion: '0.20' },
     context_length: 131072,
+    architecture: { modality: 'text->text' }
+  },
+  {
+    id: 'deepseek/deepseek-r1-0528',
+    name: 'DeepSeek R1 0528',
+    description: 'An open-source model with performance on par with leading proprietary models.',
+    pricing: { prompt: '0.27', completion: '0.27' },
+    context_length: 163840,
     architecture: { modality: 'text->text' }
   }
 ];
@@ -149,9 +197,7 @@ export default function ConfigPage() {
   const formatPrice = (price: string) => {
     const num = parseFloat(price);
     if (num === 0) return 'Free';
-    if (num < 0.000001) return `$${(num * 1000000).toFixed(2)}/1M tokens`;
-    if (num < 0.001) return `$${(num * 1000).toFixed(2)}/1K tokens`;
-    return `$${num.toFixed(4)}/1K tokens`;
+    return `$${num.toFixed(2)}/1M tokens`;
   };
 
   const formatContextLength = (length: number) => {
