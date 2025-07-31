@@ -19,7 +19,9 @@ export const GenerateBodySchema = z.object({
   url: z.string().url().max(2048),
   threadType: ThreadTypeEnum.default('regular'),
   tone: ToneEnum.default('professional'),
-  industry: IndustryEnum.default('general')
+  industry: IndustryEnum.default('general'),
+  openrouterApiKey: z.string().optional(),
+  openrouterModel: z.string().optional(),
 });
 
 export type GenerateBody = z.infer<typeof GenerateBodySchema>;

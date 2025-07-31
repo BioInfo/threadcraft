@@ -20,16 +20,25 @@ type ProviderCfg = {
 // Configure in .env(.local):
 //  LLM_PROVIDER=openrouter|openai
 //  OPENROUTER_API_KEY=... (when provider=openrouter)
-//  OPENROUTER_MODEL=anthropic/claude-3.7-sonnet
+//  OPENROUTER_MODEL=anthropic/claude-4.0-sonnet
 //  OPENAI_API_KEY=...     (when provider=openai)
 //  OPENAI_MODEL=gpt-4o-mini
-function getProviderCfg(): ProviderCfg | null {
+function getProviderCfg(userApiKey?: string, userModel?: string): ProviderCfg | null {
+  // Prioritize user-provided OpenRouter config
+  if (userApiKey && userModel) {
+    return {
+      provider: 'openrouter',
+      key: userApiKey,
+      model: userModel,
+    };
+  }
+
   const providerEnv = (process.env.LLM_PROVIDER || '').toLowerCase();
   if (providerEnv === 'openrouter') {
     return {
       provider: 'openrouter',
       key: process.env.OPENROUTER_API_KEY,
-      model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3.7-sonnet'
+      model: process.env.OPENROUTER_MODEL || 'anthropic/claude-4.0-sonnet'
     };
   }
   if (providerEnv === 'openai') {
@@ -41,7 +50,7 @@ function getProviderCfg(): ProviderCfg | null {
   }
   // Fallbacks if LLM_PROVIDER not set
   if (process.env.OPENROUTER_API_KEY) {
-    return { provider: 'openrouter', key: process.env.OPENROUTER_API_KEY, model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3.7-sonnet' };
+    return { provider: 'openrouter', key: process.env.OPENROUTER_API_KEY, model: process.env.OPENROUTER_MODEL || 'anthropic/claude-4.0-sonnet' };
   }
   if (process.env.OPENAI_API_KEY) {
     return { provider: 'openai', key: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL || 'gpt-4o-mini' };
@@ -50,8 +59,8 @@ function getProviderCfg(): ProviderCfg | null {
 }
 
 // Unified LLM call: supports OpenRouter and OpenAI; returns text content
-async function callLLM(_req: NextRequest, prompt: string): Promise<string> {
-  const cfg = getProviderCfg();
+async function callLLM(_req: NextRequest, prompt: string, userApiKey?: string, userModel?: string): Promise<string> {
+  const cfg = getProviderCfg(userApiKey, userModel);
   if (!cfg || !cfg.key) {
     // Fallback stub content to keep app running without keys
     return `STUB_RESPONSE:
@@ -310,10 +319,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Invalid request: ${msg}` }, { status: 400 });
     }
 
-    const { url, threadType, tone, industry } = parsed.data;
+    const { url, threadType, tone, industry, openrouterApiKey, openrouterModel } = parsed.data;
 
     // Cache key: url + options
-    const key = JSON.stringify({ url, threadType, tone, industry });
+    const key = JSON.stringify({ url, threadType, tone, industry, openrouterModel });
     const now = Date.now();
     const cached = cache.get(key);
     if (cached && now - cached.at < ONE_HOUR) {
@@ -324,10 +333,10 @@ export async function POST(req: NextRequest) {
     const extracted = extractFromHtml(url, html);
 
     const prompt = buildPrompt(extracted, { threadType, tone, industry });
-    const ai = await callLLM(req, prompt);
+    const ai = await callLLM(req, prompt, openrouterApiKey, openrouterModel);
     const { thread, linkedin } = parseAIJson(ai);
 
-    const cfg = getProviderCfg();
+    const cfg = getProviderCfg(openrouterApiKey, openrouterModel);
     const payload = {
       thread,
       linkedin,

@@ -69,12 +69,15 @@ export default function HomePage() {
       setLoading(true);
       announceToScreenReader('Generating social content, please wait...');
       
+      const openrouterApiKey = localStorage.getItem('openrouter_api_key');
+      const openrouterModel = localStorage.getItem('openrouter_model');
+
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ url, threadType, tone, industry })
+        body: JSON.stringify({ url, threadType, tone, industry, openrouterApiKey, openrouterModel })
       });
       if (!res.ok) {
         const t = await res.text();
