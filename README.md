@@ -12,7 +12,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
-[![GitHub Stars](https://img.shields.io/github/stars/yourusername/threadcraft?style=for-the-badge)](https://github.com/yourusername/threadcraft/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/BioInfo/threadcraft?style=for-the-badge)](https://github.com/BioInfo/threadcraft/stargazers)
 
 [🚀 Live Demo](https://threadcraft.vercel.app) • [📖 Documentation](#documentation) • [🤝 Contributing](#contributing) • [💬 Discord](https://discord.gg/threadcraft)
 
@@ -59,7 +59,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/threadcraft.git
+git clone https://github.com/BioInfo/threadcraft.git
 cd threadcraft
 
 # Install dependencies
@@ -254,7 +254,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/threadcraft&type=Date)](https://star-history.com/#yourusername/threadcraft&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=BioInfo/threadcraft&type=Date)](https://star-history.com/#BioInfo/threadcraft&Date)
 
 ---
 
