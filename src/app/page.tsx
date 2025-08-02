@@ -7,6 +7,8 @@ import { CopyButton } from '../components/CopyButton';
 import { SuccessToast } from '../components/SuccessToast';
 import { SmartUrlInput } from '../components/SmartUrlInput';
 import { AccessibilityEnhancer, announceToScreenReader } from '../components/AccessibilityEnhancer';
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
 
 export default function HomePage() {
   const [url, setUrl] = useState('');
@@ -104,40 +106,25 @@ export default function HomePage() {
 
   return (
     <AccessibilityEnhancer>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      {/* Success Toast */}
-      <SuccessToast 
-        show={showSuccess} 
-        message="Content generated successfully! 🎉"
-        onHide={() => setShowSuccess(false)}
-      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col">
+        {/* Header */}
+        <Header />
+        
+        {/* Success Toast */}
+        <SuccessToast 
+          show={showSuccess} 
+          message="Content generated successfully! 🎉"
+          onHide={() => setShowSuccess(false)}
+        />
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
-        <main id="main-content" className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
-          
-          {/* Header */}
-          <header className="text-center mb-12 animate-fade-in">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Icons.Magic />
-              </div>
-              <h1 className="text-4xl sm:text-5xl font-bold gradient-text">
-                ThreadCraft
-              </h1>
-            </div>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Transform any link into platform-optimized social content that drives engagement and builds your professional presence.
-            </p>
-          </header>
-
+        {/* Main Content */}
+        <main id="main-content" className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Main Form */}
           <div className="max-w-4xl mx-auto animate-slide-up">
             <form onSubmit={onGenerate} className="space-y-8">
               
               {/* URL Input Section */}
-              <div className="card-enhanced p-6 sm:p-8">
+              <div className={`card-enhanced p-6 sm:p-8 ${focusedInput ? 'pb-14 md:pb-16' : ''}`}>
                 <div className="flex items-center gap-3 mb-6">
                   <Icons.Link />
                   <h2 className="text-xl font-semibold text-gray-900">Article URL</h2>
@@ -450,8 +437,10 @@ export default function HomePage() {
             </div>
           )}
         </main>
+
+        {/* Footer */}
+        <Footer />
       </div>
-    </div>
     </AccessibilityEnhancer>
   );
 }

@@ -100,69 +100,74 @@ export const SmartUrlInput = ({
 
   return (
     <div className="relative">
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="url"
-          required
-          placeholder="Paste your article URL here (e.g., https://example.com/article)"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          onPaste={handlePaste}
-          className={`w-full input-enhanced text-lg py-4 px-4 transition-all duration-300 ${
-            focused ? 'transform scale-[1.02]' : ''
-          } ${
-            value && !isValid ? 'border-red-300 bg-red-50' :
-            value && isValid ? 'border-green-300 bg-green-50' : ''
-          } ${className}`}
-        />
-        
-        {/* URL Validation Indicator */}
-        {value && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            {isValid ? (
-              <div className="text-green-500 animate-scale-in">
-                <Icons.Check />
-              </div>
-            ) : (
-              <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-            )}
-          </div>
-        )}
+      {/* reserve a tiny spacer to avoid overlap with elements below when dropdown is open */}
+      <div className={`${showSuggestions ? 'pb-6 md:pb-8' : ''}`}>
+        <div className="relative">
+          <input
+            ref={inputRef}
+            type="url"
+            required
+            placeholder="Paste your article URL here (e.g., https://example.com/article)"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onPaste={handlePaste}
+            className={`w-full input-enhanced text-lg py-4 px-4 transition-all duration-300 ${
+              focused ? 'transform scale-[1.02]' : ''
+            } ${
+              value && !isValid ? 'border-red-300 bg-red-50' :
+              value && isValid ? 'border-green-300 bg-green-50' : ''
+            } ${className}`}
+          />
+          
+          {/* URL Validation Indicator */}
+          {value && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              {isValid ? (
+                <div className="text-green-500 animate-scale-in">
+                  <Icons.Check />
+                </div>
+              ) : (
+                <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Smart Suggestions Dropdown */}
       {showSuggestions && (focused || value.length === 0) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 animate-fade-in">
+        <div className="absolute top-full left-0 right-0 mt-2 mb-3 bg-white border border-gray-200 rounded-lg shadow-lg z-50 animate-fade-in max-h-80 overflow-y-auto">
           
           {/* Recent URLs */}
           {recentUrls.length > 0 && (
-            <div className="p-3 border-b border-gray-100">
-              <h4 className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+            <div className="p-2 border-b border-gray-100">
+              <h4 className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
                 Recent URLs
               </h4>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {recentUrls.map((url, index) => {
                   const source = getSourceInfo(url);
                   return (
                     <button
                       key={index}
                       onClick={() => selectSuggestion(url)}
-                      className="w-full text-left p-2 rounded-md hover:bg-gray-50 transition-colors group"
+                      className="w-full text-left p-1.5 rounded-md hover:bg-gray-50 transition-colors group"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg">{source.icon}</span>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-base leading-5">{source.icon}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-[12px] leading-4 font-medium text-gray-900 truncate">
                             {source.name}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-[11px] leading-4 text-gray-500 truncate">
                             {url}
                           </p>
                         </div>
-                        <Icons.Link />
+                        <div className="flex-shrink-0 text-gray-400">
+                          <Icons.Link />
+                        </div>
                       </div>
                     </button>
                   );
@@ -172,11 +177,12 @@ export const SmartUrlInput = ({
           )}
 
           {/* Popular Sources */}
-          <div className="p-3">
-            <h4 className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+          <div className="p-2">
+            <h4 className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
               Popular Sources
             </h4>
-            <div className="grid grid-cols-2 gap-1">
+            {/* 2 rows x 3 columns (6 items total) to reduce dropdown height */}
+            <div className="grid grid-cols-3 gap-1">
               {POPULAR_SOURCES.map((source, index) => (
                 <button
                   key={index}
@@ -185,26 +191,26 @@ export const SmartUrlInput = ({
                     window.open(`https://${source.pattern}`, '_blank');
                     setShowSuggestions(false);
                   }}
-                  className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-50 transition-colors text-left"
+                  className="flex items-center gap-1.5 p-1.5 rounded-md hover:bg-gray-50 transition-colors text-left"
                 >
-                  <span className="text-sm">{source.icon}</span>
-                  <span className="text-xs text-gray-700">{source.name}</span>
+                  <span className="text-[12px] leading-4">{source.icon}</span>
+                  <span className="text-[11px] leading-4 text-gray-700 truncate">{source.name}</span>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Pro Tip */}
-          <div className="p-3 bg-blue-50 border-t border-blue-100">
-            <div className="flex items-start gap-2">
+          <div className="p-2 bg-blue-50 border-t border-blue-100">
+            <div className="flex items-start gap-1.5">
               <div className="text-blue-500 mt-0.5">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <p className="text-xs font-medium text-blue-900">Pro Tip</p>
-                <p className="text-xs text-blue-700">
+                <p className="text-[11px] leading-4 font-medium text-blue-900">Pro Tip</p>
+                <p className="text-[11px] leading-4 text-blue-700">
                   Copy any article URL and paste it here. We'll automatically detect and validate it!
                 </p>
               </div>

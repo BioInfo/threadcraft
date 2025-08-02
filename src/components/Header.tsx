@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icons } from './Icons';
+import { useState } from 'react';
 
 export function Header() {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -38,7 +40,33 @@ export function Header() {
               </Link>
             ))}
           </nav>
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-gray-500 hover:text-gray-900"
+            >
+              {isMobileMenuOpen ? <Icons.Close /> : <Icons.Menu />}
+            </button>
+          </div>
         </div>
+        {isMobileMenuOpen && (
+          <nav className="md:hidden mt-2 pb-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href as any}
+                className={`block py-2 text-sm font-medium transition-colors ${
+                  pathname === link.href
+                    ? 'text-blue-600'
+                    : 'text-gray-500 hover:text-gray-900'
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </div>
     </header>
   );

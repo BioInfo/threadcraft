@@ -20,3 +20,13 @@ This file tracks the project's current status, including recent changes, current
 * Confirm deployment target (Vercel recommended) and environment variables for OpenAI keys
 * Decide on inclusion of optional features (hashtag trends, mentions) in MVP vs later
 <!-- 2025-07-31 07:24:55 - Memory Bank synchronized and set to ACTIVE -->
+[2025-08-02 19:37:55] - Current Focus: Finalize layout policy and dropdown UX
+- Header/Footer now rendered per-page (home/config/readme), removed from layout.tsx.
+- SmartUrlInput dropdown compacted (2x3 popular sources grid, tighter recent URLs), scrollable with max height and margin below to avoid overlap.
+
+Open Questions/Issues:
+- None pending per latest feedback.
+
+Recent Changes:
+- page.tsx/config/page.tsx/readme/page.tsx updated to include Header/Footer.
+- SmartUrlInput adjustments: reduced paddings/typography, grid cols=3, max-h-80, overflow-y-auto, mb-3.

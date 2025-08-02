@@ -23,3 +23,8 @@ It is optional, but recommended to be updated as the project evolves.
 
 * Accessibility-first design targeting WCAG 2.1 AA
 * Performance targets mapped to Core Web Vitals; bundling via code-splitting and tree-shaking
+[2025-08-02 19:37:55] - Pattern: Page-scoped layout composition in Next.js App Router
+Description: Keep root layout minimal; compose UI chrome (Header/Footer) at the page level to avoid duplication conflicts and enable per-route customization.
+
+[2025-08-02 19:37:55] - Pattern: Dropdown containment and overflow management
+Description: Constrain dropdowns with max height + overflow-y-auto, maintain high z-index within a relatively positioned parent, reduce internal padding/typography, and add panel bottom margin to avoid overlapping primary CTAs.
