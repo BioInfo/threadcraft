@@ -327,18 +327,11 @@ export default function ResearchPage() {
               {result && (
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center gap-2 justify-end">
-                    <CopyButton text={JSON.stringify(result, null, 2)} />
                     <button
                       onClick={onExportMarkdown}
                       className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
                     >
                       Export Markdown
-                    </button>
-                    <button
-                      onClick={onExportJSON}
-                      className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-                    >
-                      Export JSON
                     </button>
                   </div>
 
