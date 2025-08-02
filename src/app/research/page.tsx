@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { Header } from '../../components/Header';
 import { Footer } from '../../components/Footer';
 import { AccessibilityEnhancer } from '../../components/AccessibilityEnhancer';
@@ -61,27 +61,65 @@ export default function ResearchPage() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const liveRef = useRef<HTMLDivElement | null>(null);
 
+  // Accept:
+  // - Direct PDFs (.pdf)
+  // - arXiv abs/pdf
+  // - Common preprint servers: bioRxiv, medRxiv, chemRxiv, psyArXiv, SocArXiv, OSF Preprints, HAL, SSRN, ResearchSquare
+  // Expand as needed by adding hostname patterns below.
   const isValidUrl = useMemo(() => {
     if (!url) return false;
     try {
       const u = new URL(url);
       const http = u.protocol === 'http:' || u.protocol === 'https:';
-      const looksPdf = /\.pdf(\?|$)/i.test(url);
-      const isArxiv = /arxiv\.org\/(abs|pdf)\//i.test(url);
-      return http && (looksPdf || isArxiv);
+      if (!http) return false;
+
+      const href = u.href;
+
+      // 1) Direct PDF
+      const looksPdf = /\.pdf(\?|#|$)/i.test(href);
+      if (looksPdf) return true;
+
+      // 2) arXiv abs/pdf pages
+      const isArxiv = /(^|\.)arxiv\.org\/(abs|pdf)\//i.test(u.host + u.pathname);
+      if (isArxiv) return true;
+
+      // 3) Popular preprint archives (abs/content pages we can resolve server-side)
+      const preprintHosts = [
+        /(^|\.)biorxiv\.org$/i,
+        /(^|\.)medrxiv\.org$/i,
+        /(^|\.)chemrxiv\.org$/i,
+        /(^|\.)psyarxiv\.com$/i,
+        /(^|\.)socarxiv\.org$/i,
+        /(^|\.)osf\.io$/i,           // OSF preprints
+        /(^|\.)hal\.sciencespo\.fr$/i,
+        /(^|\.)hal\.archives-ouvertes\.fr$/i,
+        /(^|\.)ssrn\.com$/i,
+        /(^|\.)researchsquare\.com$/i
+      ];
+      const isKnownPreprint = preprintHosts.some((re) => re.test(u.host));
+      if (isKnownPreprint) return true;
+
+      return false;
     } catch {
       return false;
     }
   }, [url]);
 
-  const openrouterApiKey = useMemo(() => {
-    if (typeof window === 'undefined') return '';
-    return localStorage.getItem('openrouter_api_key') || '';
-  }, []);
+  // Avoid server/client mismatch: defer localStorage reads to client after mount
+  const [hydrated, setHydrated] = useState(false);
+  const [openrouterApiKey, setOpenrouterApiKey] = useState('');
+  const [openrouterModel, setOpenrouterModel] = useState('');
 
-  const openrouterModel = useMemo(() => {
-    if (typeof window === 'undefined') return '';
-    return localStorage.getItem('openrouter_model') || '';
+  useEffect(() => {
+    setHydrated(true);
+    try {
+      const k = localStorage.getItem('openrouter_api_key') || '';
+      const m = localStorage.getItem('openrouter_model') || '';
+      setOpenrouterApiKey(k);
+      setOpenrouterModel(m);
+    } catch {
+      // no-op
+    }
   }, []);
 
   const announce = (msg: string) => {

@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Lightweight PDF parsing using pdf-parse. If not installed, add to package.json: pdf-parse
-// We use a dynamic import so build won't crash if not present locally yet.
-async function extractPdfText(buffer: Buffer): Promise<string> {
-  try {
-    // @ts-ignore
-    const pdfParse = (await import('pdf-parse')).default ?? (await import('pdf-parse'));
-    const data = await pdfParse(buffer);
-    return data.text ?? '';
-  } catch (err) {
-    console.error('PDF parse error:', err);
-    throw new Error('Failed to parse PDF');
-  }
-}
+/**
+ * NOTE: Local PDF parsing removed per product direction.
+ * We now send either the URL or the uploaded PDF (as base64) directly to the LLM.
+ */
 
 function isArxivUrl(url: string): boolean {
   return /arxiv\.org\/(abs|pdf)\//i.test(url);
@@ -30,7 +21,7 @@ function bufferFromArrayBuffer(ab: ArrayBuffer): Buffer {
   return Buffer.from(new Uint8Array(ab));
 }
 
-// Minimal OpenRouter call wrapper
+ // Minimal OpenRouter call wrapper
 async function callOpenRouter({
   apiKey,
   model,
@@ -41,8 +32,7 @@ async function callOpenRouter({
   prompt: string;
 }): Promise<any> {
   const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-  // We request JSON output; instruct model strictly
-  const system = `You are an expert AI researcher and critical analyst. Be pragmatic, incisive, and objective. Ground all claims in specific evidence from the provided paper text. Return ONLY valid JSON according to the user-provided schema. If incomplete text, state limitations.`;
+  const system = `You are a precise research-paper analyst. Return ONLY valid JSON per the user's schema. If information is unavailable, leave empty string or [].`;
   const messages = [
     { role: 'system', content: system },
     { role: 'user', content: prompt },
@@ -57,7 +47,7 @@ async function callOpenRouter({
     body: JSON.stringify({
       model,
       messages,
-      temperature: 0.4,
+      temperature: 0.2,
       response_format: { type: 'json_object' },
     }),
   });
@@ -68,59 +58,56 @@ async function callOpenRouter({
   }
 
   const json = await res.json();
-  // OpenRouter returns choices with message.content
   const content = json?.choices?.[0]?.message?.content;
   if (!content) {
     throw new Error('No content from OpenRouter');
   }
 
-  // Try parse JSON
   try {
     return JSON.parse(content);
-  } catch (_e) {
-    // If model wrapped JSON in code fences, strip fences
+  } catch {
     const stripped = String(content).replace(/```json|```/g, '').trim();
     return JSON.parse(stripped);
   }
 }
 
-function buildUserPrompt(paperText: string, link?: string) {
-  // Mirrors docs/advanced/research_papers_feature_spec.md schema
+function buildUrlPrompt(url: string) {
   return `
-Analyze the following paper and produce a report with exactly these sections and constraints. Return valid JSON following this schema:
-
+You will fetch and read the research paper available at this URL and output ONLY JSON (no markdown fences) that matches exactly this schema:
 {
-  "metadata": {
-    "title": "",
-    "authors": [],
-    "venue_year": "",
-    "link": "",
-    "code_or_data": ""
-  },
-  "core_contribution": "",
-  "innovations_methodology": [],
-  "significance": {
-    "classification": "Fundamental Advance | Significant Increment | Niche Contribution",
-    "justification": ""
-  },
-  "limitations": [],
-  "open_questions": [],
-  "plain_english_summary": ""
+  "metadata": { "title": string, "authors": string[], "venue_year": string, "link": string, "code_or_data": string },
+  "core_contribution": string,
+  "innovations_methodology": string[],
+  "significance": { "classification": "Fundamental Advance" | "Significant Increment" | "Niche Contribution" | string, "justification": string },
+  "limitations": string[],
+  "open_questions": string[],
+  "plain_english_summary": string
+}
+Constraints:
+- Fill fields from the paper. If unknown, use empty string or [].
+- metadata.link must be "${url}".
+- Return only the JSON object.`.trim();
 }
 
-Paper text (UTF-8):
----
-${paperText}
----
+function buildUploadPrompt(b64: string, sourceUrl?: string) {
+  return `
+A research paper PDF is provided as base64 below. Read it and output ONLY JSON that matches exactly this schema:
+{
+  "metadata": { "title": string, "authors": string[], "venue_year": string, "link": string, "code_or_data": string },
+  "core_contribution": string,
+  "innovations_methodology": string[],
+  "significance": { "classification": "Fundamental Advance" | "Significant Increment" | "Niche Contribution" | string, "justification": string },
+  "limitations": string[],
+  "open_questions": string[],
+  "plain_english_summary": string
+}
+Constraints:
+- Fill fields from the paper. If unknown, use empty string or [].
+- ${sourceUrl ? `metadata.link must be "${sourceUrl}".` : `If a source link is not known, set metadata.link to "". `}
+- Return only the JSON object.
 
-Hint: If a link is known, include it in metadata.link: ${link ?? ''}
-
-Rules:
-- Keep JSON valid and minimal, no extra keys.
-- Bullet arrays must be concise strings.
-- classification must be one of the three allowed values.
-- If information is missing, leave the field empty string or [] and mention limitation in the summary justification where applicable.
-`.trim();
+PDF_BASE64:
+${b64}`.trim();
 }
 
 export const runtime = 'nodejs'; // ensure Node APIs for Buffer
@@ -131,8 +118,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     let openrouterApiKey = '';
     let openrouterModel = '';
     let url: string | undefined;
-    let paperText = '';
     let linkForMeta: string | undefined;
+    let prompt: string | undefined;
 
     if (contentType.includes('multipart/form-data')) {
       // Multipart with file upload
@@ -156,11 +143,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
 
       const arrayBuffer = await file.arrayBuffer();
-      const buffer = bufferFromArrayBuffer(arrayBuffer);
-      paperText = await extractPdfText(buffer);
+      const b64 = Buffer.from(new Uint8Array(arrayBuffer)).toString('base64');
+      prompt = buildUploadPrompt(b64, url);
       linkForMeta = url;
     } else {
-      // JSON body with url OR direct text (future)
+      // JSON body with url
       const body = await req.json().catch(() => ({}));
       url = body?.url;
       openrouterApiKey = String(body?.openrouterApiKey || '');
@@ -171,38 +158,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
 
       if (!url) {
-        return NextResponse.json({ error: 'Provide a PDF or arXiv URL or upload a PDF via multipart/form-data' }, { status: 400 });
+        return NextResponse.json({ error: 'Provide a PDF or preprint URL or upload a PDF via multipart/form-data' }, { status: 400 });
       }
 
-      // Resolve URL
-      let targetUrl = url;
-      if (isArxivUrl(url) && !/\.pdf(\?|$)/i.test(url)) {
-        // Convert arXiv abs link to pdf
-        // e.g., https://arxiv.org/abs/XXXX -> https://arxiv.org/pdf/XXXX.pdf
-        const idMatch = url.match(/arxiv\.org\/abs\/([^?#]+)/i);
-        if (idMatch?.[1]) {
-          targetUrl = `https://arxiv.org/pdf/${idMatch[1]}.pdf`;
-        }
-      }
-
-      const ab = await fetchArrayBuffer(targetUrl);
-      const buffer = bufferFromArrayBuffer(ab);
-      paperText = await extractPdfText(buffer);
+      // Keep original URL (arXiv/bioRxiv/etc.). Let the LLM fetch/resolve.
+      prompt = buildUrlPrompt(url);
       linkForMeta = url;
     }
 
-    if (!paperText || paperText.trim().length < 50) {
-      return NextResponse.json(
-        { error: 'Failed to extract sufficient text from PDF' },
-        { status: 422 }
-      );
-    }
-
-    const prompt = buildUserPrompt(paperText, linkForMeta);
     const result = await callOpenRouter({
       apiKey: openrouterApiKey,
       model: openrouterModel,
-      prompt,
+      prompt: prompt!,
     });
 
     // Basic shape validation
