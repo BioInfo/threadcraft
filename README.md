@@ -14,7 +14,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
 [![GitHub Stars](https://img.shields.io/github/stars/BioInfo/threadcraft?style=for-the-badge)](https://github.com/BioInfo/threadcraft/stargazers)
 
-[🚀 Live Demo](https://threadcraft.vercel.app) • [📖 Documentation](#documentation) • [🤝 Contributing](#contributing) • [💬 Discord](https://discord.gg/threadcraft)
+[🚀 Live Demo](https://threadcraft-delta.vercel.app) • [📖 Documentation](#documentation) • [🤝 Contributing](#contributing)
 
 </div>
 
@@ -262,6 +262,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by the ThreadCraft community**
 
-[Website](https://threadcraft.vercel.app) • [Twitter](https://twitter.com/threadcraft) • [Discord](https://discord.gg/threadcraft)
+[Website](https://threadcraft-delta.vercel.app) • [Twitter](https://twitter.com/bioinfo)
 
 </div>
