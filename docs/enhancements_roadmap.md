@@ -1,6 +1,9 @@
-# Incremental, Low-Complexity Enhancements Roadmap
+# Enhancements Roadmap (Quick Wins Only)
 
-Last updated: 2025-07-31
+Last updated: 2025-08-02
+
+Pointers to Advanced Feature Specs
+- Research Papers Feature: docs/advanced/research_papers_feature_spec.md
 
 Purpose
 A set of scoped, low-cognitive-load improvements you can add in small sprints. Each item is self-contained, deploys cleanly to Vercel, and emphasizes clarity, consistency, and minimal steps.
