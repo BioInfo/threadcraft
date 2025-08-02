@@ -26,6 +26,7 @@ ThreadCraft solves this by providing:
 - **Platform-specific optimization**: Content tailored to X and LinkedIn algorithms
 - **Professional templates**: Based on proven engagement frameworks
 - **No-friction experience**: No login, database, or complex setup required
+- NEW: **Research Papers analysis page (/research)** — Ingest PDF or arXiv links/uploads, run LLM-based structured analysis (seven-section expert report), export to Markdown/JSON, and reuse the existing OpenRouter model/key from Config. Linked from Header navigation only.
 
 ---
 
@@ -104,6 +105,22 @@ ThreadCraft solves this by providing:
 - **Character Count Display**: Real-time character counting for each segment
 
 ### 4.2 Secondary Features
+
+### 4.3 Research Papers Analysis Page (/research)
+- Purpose: Provide expert, structured analysis of academic papers to inform content generation and research workflows.
+- Inputs: PDF URL, arXiv link, or direct PDF upload.
+- Processing: Server-side PDF/arXiv text extraction; LLM analysis using the configured OpenRouter model and API key (from Config/localStorage).
+- Output (seven sections):
+  1) Metadata Snapshot
+  2) Core Contribution (1–2 sentences)
+  3) Key Innovations & Methodology (≤4 bullets)
+  4) Significance & Impact (classification + justification)
+  5) Weaknesses & Limitations (≤4 bullets)
+  6) Open Questions & Future Directions (≤3 bullets)
+  7) Plain-English Summary (≤150 words)
+- UX: Accessible, responsive results with copy per section and exports (Markdown/JSON). Add “Research” link to Header (not Footer).
+- Constraints: File type = PDF only for uploads; reasonable size limits; arXiv detection; error states for fetch/parse failures.
+- Reference: See docs/advanced/research_papers_feature_spec.md for full specification.
 
 #### 4.2.1 Content Preview
 - **Platform Mockups**: Visual preview of how content appears on X and LinkedIn
