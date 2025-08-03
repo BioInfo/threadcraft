@@ -33,3 +33,4 @@ Implications: Root layout no longer renders Footer. Pages (home, config, readme)
 Rationale: Dropdown overlapped the Generate button. User requested smaller box: show 6 popular sources in 2 rows, tighten recent history styles.
 Changes: Popular sources grid set to 3 columns (2 rows total). Reduced paddings/fonts/line-heights, capped max height, added scroll and bottom margin.
 Implications: Smaller vertical footprint, improved accessibility, reduced overlap risk.
+[2025-08-02 20:45:35] - Merged feature/research-page into main and pushed to GitHub. Research Papers feature includes deterministic server-side fetch, provider-adaptive OpenRouter payloads, JSON normalization, context-length guards, and removal of local PDF parsing in favor of URL/base64. Noted unresolved runtime error observed locally ("Cannot read properties of undefined (reading 'bind')") likely related to middleware or config duplication; deferred to post-merge investigation.

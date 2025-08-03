@@ -54,11 +54,11 @@ const POPULAR_MODELS: OpenRouterModel[] = [
     architecture: { modality: 'text+image->text' }
   },
   {
-    id: 'meta-llama/llama-4-maverick',
-    name: 'Llama 4 Maverick',
-    description: 'Meta\'s high-capacity multimodal model with a large context window.',
-    pricing: { prompt: '0.15', completion: '0.60' },
-    context_length: 1050000,
+    id: 'openai/o3-mini-high',
+    name: 'OpenAI o3 Mini High',
+    description: 'OpenAI\'s o3-mini-high reasoning model: cost-effective with strong reasoning capabilities.',
+    pricing: { prompt: '1.00', completion: '3.00' },
+    context_length: 200000,
     architecture: { modality: 'text+image->text' }
   },
   {

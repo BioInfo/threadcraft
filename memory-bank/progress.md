@@ -24,3 +24,6 @@ This file tracks the project's progress using a task list format.
 [2025-08-02 19:37:55] - Completed: Move Header/Footer rendering responsibility to pages (home/config/readme) and remove Footer from root layout.
 [2025-08-02 19:37:55] - Completed: Resolve URL dropdown overlap by reducing vertical footprint, adding scroll, and spacing below panel.
 [2025-08-02 19:37:55] - Completed: Popular Sources compacted to 2 rows x 3 columns; Recent URLs tightened with smaller typography and spacing.
+[2025-08-02 20:46:05] - Completed: Rolled feature/research-page into main and pushed to GitHub. 
+[2025-08-02 20:46:05] - Completed: Memory Bank updated (decisionLog.md, activeContext.md).
+[2025-08-02 20:46:05] - Next: Investigate Next.js runtime error “TypeError: Cannot read properties of undefined (reading 'bind')” observed locally; suspected middleware/config duplication. Deferred post-merge.

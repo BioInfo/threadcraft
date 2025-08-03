@@ -30,3 +30,4 @@ Open Questions/Issues:
 Recent Changes:
 - page.tsx/config/page.tsx/readme/page.tsx updated to include Header/Footer.
 - SmartUrlInput adjustments: reduced paddings/typography, grid cols=3, max-h-80, overflow-y-auto, mb-3.
+[2025-08-02 20:45:55] - Current Focus: Research Papers feature merged to main; post-merge task is Memory Bank sync and follow-up runtime error investigation noted earlier ("reading 'bind'").
