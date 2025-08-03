@@ -26,7 +26,7 @@ export default function ReadmePage() {
                 </p>
               </div>
 
-              <div className="space-y-8">
+              <div className="space-y-10">
                 <section>
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">What is ThreadCraft?</h2>
                   <p className="text-gray-700">
@@ -53,10 +53,50 @@ export default function ReadmePage() {
                 </section>
 
                 <section>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Configuration</h2>
-                  <p className="text-gray-700">
-                    You can configure ThreadCraft to use your own OpenRouter API key and select from a list of popular AI models. This allows you to use your preferred models and take advantage of OpenRouter's extensive model library.
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Research Papers (New)</h2>
+                  <p className="text-gray-700 mb-3">
+                    Analyze academic papers from a PDF URL, arXiv link, or by uploading a PDF. ThreadCraft extracts key signals and summarizes the work into clear, actionable insights.
                   </p>
+                  <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                    <li>Deterministic server-side fetch with provider-adaptive payloads</li>
+                    <li>Metadata snapshot (title, authors, venue/year, code/data link)</li>
+                    <li>Core contribution, innovations & methodology, significance, limitations, open questions</li>
+                    <li>Plain-English summary + export to Markdown/JSON</li>
+                    <li>Smart history: recent research queries and popular sources dropdown (focus-activated)</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">LLM Configuration</h2>
+                  <p className="text-gray-700 mb-3">
+                    Configure OpenRouter and choose your preferred model on the Config page. Built-in models include Claude, Gemini, GPT‑4o, Mistral, Grok, Qwen, GLM, DeepSeek, and more.
+                  </p>
+                  <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                    <li>One-click connection test to OpenRouter</li>
+                    <li>Select from curated “Popular Models”</li>
+                    <li><strong>Custom Models:</strong> Paste any OpenRouter Model ID, validate availability, add display name/description, test with a sample prompt (shows latency, tokens, cost), and persist locally with a “Custom” tag</li>
+                    <li>Recent update: replaced Maverick with <code>openai/o3-mini-high</code></li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Privacy & Performance</h2>
+                  <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                    <li>No database; temporary in-memory processing</li>
+                    <li>Edge-first architecture and intelligent caching</li>
+                    <li>Optional rate limiting per IP</li>
+                    <li>WCAG 2.1 AA accessibility</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Where to Find It</h2>
+                  <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                    <li>Home (Summary): <code>/</code></li>
+                    <li>Configuration: <code>/config</code></li>
+                    <li>Research Papers: <code>/research</code></li>
+                    <li>This Readme: <code>/readme</code></li>
+                  </ul>
                 </section>
               </div>
             </div>

@@ -60,6 +60,20 @@ export default function ResearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const liveRef = useRef<HTMLDivElement | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Research query history (mirrors SmartUrlInput UX patterns)
+  const LOCAL_RESEARCH_HISTORY_KEY = 'research_recent_queries';
+  const MAX_HISTORY = 10;
+  const [recentQueries, setRecentQueries] = useState<string[]>([]);
+  const POPULAR_SOURCES: { label: string; value: string }[] = [
+    { label: 'arXiv', value: 'https://arxiv.org/abs/2407.12345' },
+    { label: 'bioRxiv', value: 'https://www.biorxiv.org/content/10.1101/2024.01.01.123456v1' },
+    { label: 'SSRN', value: 'https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1234567' },
+    { label: 'HAL', value: 'https://hal.science/hal-01234567' },
+    { label: 'ResearchSquare', value: 'https://www.researchsquare.com/article/rs-123456/v1' },
+    { label: 'Direct PDF', value: 'https://example.com/paper.pdf' },
+  ];
 
   // Accept:
   // - Direct PDFs (.pdf)
@@ -117,16 +131,41 @@ export default function ResearchPage() {
       const m = localStorage.getItem('openrouter_model') || '';
       setOpenrouterApiKey(k);
       setOpenrouterModel(m);
+      const raw = localStorage.getItem(LOCAL_RESEARCH_HISTORY_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setRecentQueries(parsed.filter((s) => typeof s === 'string'));
+        }
+      }
     } catch {
       // no-op
     }
   }, []);
+
+  // persist history when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_RESEARCH_HISTORY_KEY, JSON.stringify(recentQueries.slice(0, MAX_HISTORY)));
+    } catch {
+      // ignore
+    }
+  }, [recentQueries]);
 
   const announce = (msg: string) => {
     if (liveRef.current) {
       liveRef.current.textContent = msg;
     }
   };
+
+  const pushToHistory = useCallback((q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    setRecentQueries((prev) => {
+      const without = prev.filter((x) => x !== trimmed);
+      return [trimmed, ...without].slice(0, MAX_HISTORY);
+    });
+  }, []);
 
   const onAnalyze = useCallback(async () => {
     setError(null);
@@ -177,6 +216,7 @@ export default function ResearchPage() {
 
       const json = (await res.json()) as AnalysisResult;
       setResult(json);
+      if (tab === 'url') pushToHistory(url);
       announce('Analysis completed');
     } catch (e: any) {
       setError(e?.message || 'Failed to analyze paper');
@@ -233,96 +273,142 @@ export default function ResearchPage() {
   }, [result]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
       <Header />
       <main className="flex-1">
         <AccessibilityEnhancer>
           <div aria-live="polite" aria-atomic="true" className="sr-only" ref={liveRef} />
-          <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Research Papers Analysis</h1>
-            <p className="text-gray-600 mt-1">Analyze academic papers from a PDF URL, arXiv link, or by uploading a PDF. Uses your configured OpenRouter model.</p>
-          </div>
+          <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Research Papers Analysis</h1>
+              <p className="text-gray-600 mt-1">Analyze academic papers from a PDF URL, arXiv link, or by uploading a PDF. Uses your configured OpenRouter model.</p>
+            </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 space-y-4">
-              <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center gap-4">
-                  <button
-                    className={`text-sm font-medium px-3 py-1.5 rounded ${tab === 'url' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                    onClick={() => setTab('url')}
-                    aria-pressed={tab === 'url'}
-                  >
-                    From URL
-                  </button>
-                  <button
-                    className={`text-sm font-medium px-3 py-1.5 rounded ${tab === 'upload' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                    onClick={() => setTab('upload')}
-                    aria-pressed={tab === 'upload'}
-                  >
-                    Upload PDF
-                  </button>
-                </div>
-                <div className="p-4 space-y-3">
-                  {tab === 'url' ? (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">PDF or arXiv URL</label>
-                      <input
-                        type="url"
-                        placeholder="https://arxiv.org/abs/XXXX.XXXXX or a direct PDF URL"
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        aria-invalid={!!url && !isValidUrl}
-                        aria-describedby="url-help"
-                      />
-                      <p id="url-help" className="text-xs text-gray-500 mt-1">
-                        Must be an http/https link and either an arXiv page or a .pdf URL.
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Upload PDF</label>
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                        className="w-full text-sm"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Max 20MB. For uploads, you can optionally provide a source URL in the field above (used only for metadata link).</p>
-                      <div className="mt-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Optional Source URL</label>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 space-y-4">
+                <div className="rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center gap-4">
+                    <button
+                      className={`text-sm font-medium px-3 py-1.5 rounded ${tab === 'url' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                      onClick={() => setTab('url')}
+                      aria-pressed={tab === 'url'}
+                    >
+                      From URL
+                    </button>
+                    <button
+                      className={`text-sm font-medium px-3 py-1.5 rounded ${tab === 'upload' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                      onClick={() => setTab('upload')}
+                      aria-pressed={tab === 'upload'}
+                    >
+                      Upload PDF
+                    </button>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    {tab === 'url' ? (
+                      <div className="relative">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">PDF or arXiv URL</label>
                         <input
                           type="url"
-                          placeholder="https://arxiv.org/abs/XXXX.XXXXX or original paper URL"
+                          placeholder="https://arxiv.org/abs/XXXX.XXXXX or a direct PDF URL"
                           value={url}
                           onChange={(e) => setUrl(e.target.value)}
                           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          aria-invalid={!!url && !isValidUrl}
+                          aria-describedby="url-help"
+                          onFocus={() => setDropdownOpen(true)}
+                          onBlur={() => setTimeout(() => setDropdownOpen(false), 100)}
                         />
+                        {/* Dropdown panel: Popular + Recent (only when focused) */}
+                        {dropdownOpen && (
+                          <div className="absolute left-0 right-0 z-20 mt-2 rounded-md border border-gray-200 bg-white shadow-xl max-h-80 overflow-y-auto mb-3">
+                            <div className="p-3">
+                              <div className="text-xs font-semibold text-gray-500 mb-2">Popular Sources</div>
+                              <div className="grid grid-cols-3 gap-2">
+                                {POPULAR_SOURCES.map((item) => (
+                                  <button
+                                    key={item.label}
+                                    type="button"
+                                    className="text-left text-xs rounded border border-gray-200 px-2 py-2 hover:bg-gray-50"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => setUrl(item.value)}
+                                  >
+                                    <div className="font-medium text-gray-800">{item.label}</div>
+                                    <div className="text-gray-500 truncate">{item.value}</div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="px-3 pb-3">
+                              <div className="text-xs font-semibold text-gray-500 mb-2">Recent</div>
+                              <ul className="space-y-1">
+                                {recentQueries.length ? (
+                                  recentQueries.map((q, idx) => (
+                                    <li key={idx}>
+                                      <button
+                                        type="button"
+                                        className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-gray-50 truncate"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => setUrl(q)}
+                                        title={q}
+                                      >
+                                        {q}
+                                      </button>
+                                    </li>
+                                  ))
+                                ) : (
+                                  <li className="text-xs text-gray-400 px-2 py-1.5">No recent queries</li>
+                                )}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+                        <p id="url-help" className="text-xs text-gray-500 mt-1">
+                          Must be an http/https link and either an arXiv page or a .pdf URL.
+                        </p>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Upload PDF</label>
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                          className="w-full text-sm"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Max 20MB. For uploads, you can optionally provide a source URL in the field above (used only for metadata link).</p>
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Optional Source URL</label>
+                          <input
+                            type="url"
+                            placeholder="https://arxiv.org/abs/XXXX.XXXXX or original paper URL"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+                    )}
 
-                  <div className="pt-2">
-                    <button
-                      onClick={onAnalyze}
-                      disabled={loading || (tab === 'url' ? !isValidUrl : !file)}
-                      className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white ${loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} disabled:opacity-50`}
-                      aria-busy={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>Analyze</>
-                      )}
-                    </button>
-                    {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+                    <div className="pt-2">
+                      <button
+                        onClick={onAnalyze}
+                        disabled={loading || (tab === 'url' ? !isValidUrl : !file)}
+                        className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white ${loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} disabled:opacity-50`}
+                        aria-busy={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>Analyze</>
+                        )}
+                      </button>
+                      {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {result && (
                 <div className="space-y-4">
